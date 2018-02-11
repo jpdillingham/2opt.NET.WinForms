@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -15,15 +16,16 @@ namespace WindowsFormsApp1
     {
         #region Private Fields
 
+        private static bool cancel = false;
         private static int iterationCount = 0;
         private static int maxUnproductiveIterations = 1000;
+        private static List<System.Drawing.Point> origPoints;
         private static int pointCount = 5;
         private static int previousIntersectionCount = 0;
         private static Random rng = new Random();
         private static int unproductiveIterationCount = 0;
         private static int xLim = 10;
         private static int yLim = 10;
-
         private static List<Tuple<Line, Line>> IntersectingLines { get; set; }
         private static List<Line> Lines { get; set; }
         private static List<_2opt.NET.Point> Points { get; set; }
@@ -46,37 +48,31 @@ namespace WindowsFormsApp1
 
         private void button1_Click(object sender, EventArgs e)
         {
-            while (true)
-            {
-                Lines = GetLinesFromPoints(Points);
-                IntersectingLines = GetIntersectingLines(Lines);
+            cancel = false;
 
-                if (IntersectingLines.Count == 0)
+            while (!cancel)
+            {
+                try
+                {
+                    Mutate();
+                }
+                catch
                 {
                     break;
                 }
 
-                if (IntersectingLines.Count >= previousIntersectionCount)
-                {
-                    unproductiveIterationCount++;
-                }
-
-                previousIntersectionCount = IntersectingLines.Count;
-                iterationCount++;
-
-                Points = MutateIntersectingLines(Points, IntersectingLines);
                 Refresh();
 
                 Application.DoEvents();
 
-                System.Threading.Thread.Sleep(25);
+                System.Threading.Thread.Sleep(10);
             }
         }
 
         private void Form1_Paint(object sender, PaintEventArgs e)
         {
             Graphics graphics = e.Graphics;
-            Pen pen = new Pen(Color.Black, 5);
+            Pen pen = new Pen(Color.Black, 1);
 
             List<System.Drawing.Point> points = new List<System.Drawing.Point>();
 
@@ -85,7 +81,28 @@ namespace WindowsFormsApp1
                 points.Add(point.GetDrawingPoint());
             }
 
+            e.Graphics.FillPolygon(new SolidBrush(Color.LightBlue), points.ToArray());
             e.Graphics.DrawPolygon(pen, points.ToArray());
+
+            if (origPoints != null)
+            {
+                e.Graphics.FillPolygon(new SolidBrush(Color.LightBlue), origPoints.ToArray());
+                e.Graphics.DrawPolygon(pen, origPoints.ToArray());
+            }
+        }
+
+        private void Mutate()
+        {
+            Lines = GetLinesFromPoints(Points);
+            IntersectingLines = GetIntersectingLines(Lines);
+
+            if (IntersectingLines.Count == 0)
+            {
+                throw new Exception();
+            }
+
+            Points = MutateIntersectingLines(Points, IntersectingLines);
+            Refresh();
         }
 
         #endregion Private Methods
@@ -154,8 +171,24 @@ namespace WindowsFormsApp1
 
             Tuple<Line, Line> pair = intersectingLines[pairIndex];
 
-            _2opt.NET.Point left = pair.Item1.Points[0];
-            _2opt.NET.Point right = pair.Item2.Points[1];
+            Debug.WriteLine($"Intersecting pair: {pair.Item1} {pair.Item2}");
+
+            Line line1;
+            Line line2;
+
+            if (rng.Next(1) == 1)
+            {
+                line1 = pair.Item1;
+                line2 = pair.Item2;
+            }
+            else
+            {
+                line1 = pair.Item2;
+                line2 = pair.Item1;
+            }
+
+            _2opt.NET.Point left = line1.Points[0];
+            _2opt.NET.Point right = line2.Points[1];
 
             for (int i = 0; i < points.Count; i++)
             {
@@ -174,7 +207,26 @@ namespace WindowsFormsApp1
 
         private void button2_Click(object sender, EventArgs e)
         {
-            Points = GetRandomizedPoints(25, 500, 500);
+            Points = GetRandomizedPoints(Int32.Parse(textBox1.Text), 300, 300);
+
+            origPoints = new List<System.Drawing.Point>();
+
+            foreach (_2opt.NET.Point point in Points)
+            {
+                origPoints.Add(new System.Drawing.Point(point.X + 400, point.Y));
+            }
+
+            Refresh();
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            cancel = true;
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            Mutate();
             Refresh();
         }
     }
