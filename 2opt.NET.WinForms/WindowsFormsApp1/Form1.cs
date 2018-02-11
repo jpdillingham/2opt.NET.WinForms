@@ -69,10 +69,20 @@ namespace WindowsFormsApp1
             }
         }
 
+        private void DrawPoly(Graphics graphics, List<System.Drawing.Point> points)
+        {
+            graphics.FillPolygon(new SolidBrush(Color.LightBlue), points.ToArray());
+            graphics.DrawPolygon(new Pen(Color.Gray), points.ToArray());
+
+            foreach (System.Drawing.Point point in points)
+            {
+                graphics.FillEllipse(new SolidBrush(Color.Black), new Rectangle(point, new System.Drawing.Size(5, 5)));
+            }
+        }
+
         private void Form1_Paint(object sender, PaintEventArgs e)
         {
             Graphics graphics = e.Graphics;
-            Pen pen = new Pen(Color.Black, 1);
 
             List<System.Drawing.Point> points = new List<System.Drawing.Point>();
 
@@ -81,13 +91,11 @@ namespace WindowsFormsApp1
                 points.Add(point.GetDrawingPoint());
             }
 
-            e.Graphics.FillPolygon(new SolidBrush(Color.LightBlue), points.ToArray());
-            e.Graphics.DrawPolygon(pen, points.ToArray());
+            DrawPoly(e.Graphics, points);
 
             if (origPoints != null)
             {
-                e.Graphics.FillPolygon(new SolidBrush(Color.LightBlue), origPoints.ToArray());
-                e.Graphics.DrawPolygon(pen, origPoints.ToArray());
+                DrawPoly(e.Graphics, origPoints);
             }
         }
 
