@@ -30,6 +30,8 @@ namespace WindowsFormsApp1
         private static List<Line> Lines { get; set; }
         private static List<_2opt.NET.Point> Points { get; set; }
 
+        private static Stopwatch stopwatch = new Stopwatch();
+
         private static int iterations = 0;
 
         #endregion Private Fields
@@ -59,9 +61,11 @@ namespace WindowsFormsApp1
                     Mutate();
                     iterations++;
                     toolStripStatusLabel2.Text = $"Iterations: {iterations}";
+                    toolStripStatusLabel3.Text = $"Elapsed time: {stopwatch.Elapsed.ToString("c")}";
                 }
                 catch
                 {
+                    stopwatch.Stop();
                     break;
                 }
 
@@ -80,7 +84,7 @@ namespace WindowsFormsApp1
 
             foreach (System.Drawing.Point point in points)
             {
-                graphics.FillEllipse(new SolidBrush(Color.Black), new Rectangle(point, new System.Drawing.Size(5, 5)));
+                graphics.FillEllipse(new SolidBrush(Color.Black), new Rectangle(new System.Drawing.Point(point.X - 2, point.Y - 2), new System.Drawing.Size(5, 5)));
             }
         }
 
@@ -231,8 +235,12 @@ namespace WindowsFormsApp1
             }
 
             iterations = 0;
+            stopwatch.Reset();
+            stopwatch.Start();
+
             toolStripStatusLabel1.Text = string.Empty;
             toolStripStatusLabel2.Text = string.Empty;
+            toolStripStatusLabel3.Text = string.Empty;
 
             Refresh();
         }
