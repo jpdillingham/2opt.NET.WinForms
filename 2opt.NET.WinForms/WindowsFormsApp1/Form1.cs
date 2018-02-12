@@ -30,6 +30,8 @@ namespace WindowsFormsApp1
         private static List<Line> Lines { get; set; }
         private static List<_2opt.NET.Point> Points { get; set; }
 
+        private static int iterations = 0;
+
         #endregion Private Fields
 
         #region Public Constructors
@@ -55,6 +57,8 @@ namespace WindowsFormsApp1
                 try
                 {
                     Mutate();
+                    iterations++;
+                    toolStripStatusLabel2.Text = $"Iterations: {iterations}";
                 }
                 catch
                 {
@@ -65,7 +69,7 @@ namespace WindowsFormsApp1
 
                 Application.DoEvents();
 
-                System.Threading.Thread.Sleep(10);
+                System.Threading.Thread.Sleep(0);
             }
         }
 
@@ -104,6 +108,8 @@ namespace WindowsFormsApp1
             Lines = GetLinesFromPoints(Points);
             IntersectingLines = GetIntersectingLines(Lines);
 
+            toolStripStatusLabel1.Text = $"Intersections remaining: {IntersectingLines.Count}";
+
             if (IntersectingLines.Count == 0)
             {
                 throw new Exception();
@@ -128,9 +134,9 @@ namespace WindowsFormsApp1
                         continue;
                     }
 
-                    if (Utility.LineSegementsIntersect(Lines[i].Points[0], Lines[i].Points[1], Lines[j].Points[0], Lines[j].Points[1]))
+                    if (Utility.LineSegementsIntersect(lines[i].Points[0], lines[i].Points[1], lines[j].Points[0], lines[j].Points[1]))
                     {
-                        var intersectingPair = new Tuple<Line, Line>(Lines[i], Lines[j]);
+                        var intersectingPair = new Tuple<Line, Line>(lines[i], lines[j]);
                         intersectingLines.Add(intersectingPair);
                     }
                 }
@@ -179,7 +185,7 @@ namespace WindowsFormsApp1
 
             Tuple<Line, Line> pair = intersectingLines[pairIndex];
 
-            Debug.WriteLine($"Intersecting pair: {pair.Item1} {pair.Item2}");
+            //Debug.WriteLine($"Intersecting pair: {pair.Item1} {pair.Item2}");
 
             Line line1;
             Line line2;
@@ -223,6 +229,10 @@ namespace WindowsFormsApp1
             {
                 origPoints.Add(new System.Drawing.Point(point.X + 400, point.Y));
             }
+
+            iterations = 0;
+            toolStripStatusLabel1.Text = string.Empty;
+            toolStripStatusLabel2.Text = string.Empty;
 
             Refresh();
         }
